@@ -1,0 +1,23 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'chat/style.css' %}">
+
+<div class="header">
+Django - チャットアプリデモ
+</div>
+
+<h2>ルームを新しく作成する<h2>
+<div class="create-room-box">
+    <form action="/room/" method="post">
+        {% csrf_token %}
+        <input placeholder="ルーム名を入力" type="text" name="room_name" value="">
+        <input type="submit" class="send" name="button" value="作成"> 
+    </form>
+</div>
+
+<h2>ルーム一覧</h2>
+<ul class="select-room-box">
+{% for room in room_list %}
+    <a href="/chat/{{ room.name }}">{{ room.name }}</a>
+{% endfor %}
+</ul>

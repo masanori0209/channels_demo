@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+
+  nginx:
+    build:
+      context: ./
+      dockerfile: ./nginx/Dockerfile
+    command: 'sh /etc/nginx/start-nginx.sh'
+    environment:
+      TZ: 'Asia/Tokyo'
+    ports:
+      - 8000:8000
+    volumes:
+      - ./nginx/logs/nginx/:/var/log/nginx/
+      - ./nginx/uwsgi_params:/etc/nginx/uwsgi_params
+      - ./django/static:/var/www/static/
+    depends_on:
+      - django
+
+  redis:
+    image: redis:alpine
+    expose:
+      - "6379"
+
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=test # YOUR PASSWORD
+      - MYSQL_ROOT_HOST=%
+    volumes:
+      - ./db/db-datadir:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d
+      - ./db/my.cnf:/etc/mysql/my.cnf
+
+  django:
+    build:
+      context: ./django
+      dockerfile: Dockerfile
+    command: 'sh /server/start-django.sh'
+    # command: 'python /server/manage.py runserver'
+    expose:
+      - "8001"
+      - "3001"
+    volumes:
+      - ./django:/server/
+    depends_on:
+      - mysql
+      - redis

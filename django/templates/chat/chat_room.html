@@ -1,0 +1,57 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'chat/style.css' %}">
+
+<div class="container">
+
+<div class="header">
+<a href="/" class="back">＜戻る</a>
+Django - チャットアプリデモ - {{ room.name }}
+</div>
+
+<div class="chat-room-body">
+{% for message in messages %}
+    <div class="chat-box">
+        <div class="chat-header">
+            名前：{{message.name}}
+        </div>
+        <div class="chat-body">
+            {{message.content}}
+        </div>
+    </div>
+{% endfor %}
+    <div id="footer"></div>
+</div>
+
+<div class="chat-room-footer">
+    <div class="send-msg">
+        <input placeholder="名前を入力" id="name" value=""/>
+        <input placeholder="メッセージを入力" id="msg" value=""/><button id="send">送信</button>
+    </div>
+</div>
+
+</div>
+
+<script>
+const url = 'ws://localhost:8000/ws/' + '{{room.name}}'
+var ws = new WebSocket(url)
+
+document.getElementById("send").onclick = function sendMessage () {
+    var sendData = {
+        name: document.getElementById('name').value,
+        message: document.getElementById('msg').value
+    }
+    ws.send(JSON.stringify(sendData))
+}
+
+ws.onmessage = e => {
+    var receiveData = JSON.parse(e.data)
+    var messageBox = document.createElement('div')
+    messageBox.className = 'chat-box'
+    var header = '<div class="chat-header">名前：' + receiveData.name + '</div>'
+    var body = '<div class="chat-body">' + receiveData.message + '</div>'
+    document.getElementById('footer').insertAdjacentHTML('beforebegin', header + body)
+    document.getElementById('footer').appendChild(messageBox)
+}
+
+</script>
